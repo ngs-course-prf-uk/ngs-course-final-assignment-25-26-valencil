@@ -2,7 +2,7 @@
 
 # Distribution of read depth (DP) qualities INDELS vs. SNPs
 
-## Git Bash
+## 1 Git Bash
 Some of the code I used is referenced directly from the solution to the variant quality task.
 
 ### I. Preparing data
@@ -30,7 +30,7 @@ wc -l *.tsv
 paste col-dp.tsv col-type.tsv > cols-all.tsv
 ```
 ___
-## R studio
+## 2 R studio
 
 ### I. Preparing
 To begin with, I simply got the library for ggplots and set the right working directory.
@@ -65,9 +65,11 @@ ggsave(filename = "~/projects/ngs-course-final-assignment-25-26-valencil/results
 Then I made a simple boxplot for another comparison between the types:
 ```
 d %>%
+  filter(TYPE %in% c("SNP","INDEL"), DP > 0) %>%
   ggplot(aes(TYPE, DP, fill = TYPE)) +
   geom_boxplot(outlier.size = 0.01) +
   ggtitle("Distribution of read depth (DP) qualities INDELS vs. SNPs") +
+  scale_fill_manual(values = c("SNP" = "steelblue", "INDEL" = "orange")) +
   scale_y_log10()
 ```
 And also saved this plot:
@@ -94,16 +96,15 @@ Lastly I perform the Wilcox test (as also suggested by ChatGPT):
 wilcox.test(DP ~ TYPE, data = d)
 ```
 ___
-## Results
+## 3 Results
 
 ### I. Plots
 ![Histogram showing the DP of SNPs and indels](./results/histogram.jpeg)
-We can clearly see that both the SNPs are most frequent at lower read depths due to coverage bias, as lower read regions are more numerous. SNPs are also more frequent than indels at all read depths.
-In the indels, this is less apparent. Indels do visibly somewhat adhere to coverage bias, being higher at more frequently detected read depths, however, their distribution is still visibly more skewed towards longer reads in comparison to SNPs.
+We can clearly see that both the SNPs are most frequent at lower read depths, likely due to coverage bias, as lower read regions are more numerous. In the indels, this is less apparent. Indels do isibly somewhat adhere to coverage bias, being higher at more frequently detected read depths, however, their distribution is still visibly more skewed towards longer reads in comparison to SNPs. The proportion of indels in comparison to SNPs grows with higher DP.
 
 
 ![Boxplot showing two colums, one of SNPs and one of indels, comparing their DP on the y axis.](./results/boxplot.jpeg)
-The boxplot confirms the median and interquartile range are higher for indels. 
+The boxplot confirms that the median and interquartile range are indeed higher for indels. 
 
 ### II. Statistics
 
@@ -138,6 +139,6 @@ alternative hypothesis: true location shift is not equal to 0
 ```
 The wilcox test confirms that the difference between SNP and indel DPs is statistically significant The p-value is very low, indicating that the probability of this difference being a coincidence is very low.
 
-## Conclusions
-As is expected, the number of detected SNPs is overall higher than that of indels, which is normal.
-Indels are more likely to be detected at higher DPs and therefore in regions with higher sequencing coverage. This makes sense, as the requirements for detecting an indel are higher that hat of an SNP - it requires a higher alignment quality to avoid false positives.
+## 4 Conclusions
+As is expected, the number of detected SNPs is overall higher than that of indels, which is normal in genomes.
+Indels are also more likely to be identified at higher DPs and therefore in regions with higher sequencing coverage. This makes sense, as the requirements for detecting an indel are higher that hat of an SNP - it requires a higher alignment quality to avoid false positives.
